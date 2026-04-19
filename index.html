@@ -436,29 +436,10 @@
   </div>
   <div class="header-right" id="header-actions" style="display:none;">
     <button class="btn btn-ghost" onclick="loadOrders()">↻ Refresh</button>
-    <button class="btn btn-ghost" onclick="showSetup()">⚙️</button>
   </div>
 </header>
 
-<!-- SETUP PANEL -->
-<div id="setup-panel">
-  <div style="height:16px;"></div>
-  <div class="setup-card">
-    <div class="setup-header">
-      <h2>Connect to Shopify</h2>
-      <p>Paste in your Cloudflare Worker URL below. Only needs to be done once.</p>
-    </div>
-    <div class="setup-body">
-      <div class="field">
-        <label>Cloudflare Worker URL</label>
-        <input type="url" id="worker-url" placeholder="https://your-worker.workers.dev" autocomplete="off" spellcheck="false" />
-        <span class="hint">The URL of the Worker script you deployed to Cloudflare.</span>
-      </div>
-      <div id="setup-error" class="error-banner"></div>
-      <button class="btn btn-primary" id="connect-btn" onclick="connect()">Load Packing List</button>
-    </div>
-  </div>
-</div>
+
 
 <!-- MAIN CONTENT -->
 <div id="main-content">
@@ -507,62 +488,16 @@
 </div>
 
 <script>
-  const WORKER_KEY = 'tis_worker_url';
+  const WORKER_URL = 'https://packing-list.ketan-k1296.workers.dev';
 
   window.addEventListener('DOMContentLoaded', () => {
-    const saved = localStorage.getItem(WORKER_KEY);
-    if (saved) {
-      document.getElementById('worker-url').value = saved;
-      showMain();
-      loadOrders();
-    }
-  });
-
-  function showSetup() {
-    document.getElementById('setup-panel').style.display = 'block';
-    document.getElementById('main-content').style.display = 'none';
-    document.getElementById('header-actions').style.display = 'none';
-  }
-
-  function showMain() {
-    document.getElementById('setup-panel').style.display = 'none';
     document.getElementById('main-content').style.display = 'block';
     document.getElementById('header-actions').style.display = 'flex';
-  }
-
-  async function connect() {
-    const url = document.getElementById('worker-url').value.trim().replace(/\/$/, '');
-    if (!url) {
-      showSetupError('Please enter your Cloudflare Worker URL.');
-      return;
-    }
-
-    localStorage.setItem(WORKER_KEY, url);
-    document.getElementById('connect-btn').disabled = true;
-    document.getElementById('connect-btn').textContent = 'Connecting...';
-    document.getElementById('setup-error').style.display = 'none';
-
-    try {
-      showMain();
-      await loadOrders();
-    } catch(e) {
-      showSetup();
-      showSetupError(e.message);
-    } finally {
-      document.getElementById('connect-btn').disabled = false;
-      document.getElementById('connect-btn').textContent = 'Load Packing List';
-    }
-  }
-
-  function showSetupError(msg) {
-    const el = document.getElementById('setup-error');
-    el.textContent = '⚠️ ' + msg;
-    el.style.display = 'block';
-  }
+    loadOrders();
+  });
 
   async function loadOrders() {
-    const workerUrl = localStorage.getItem(WORKER_KEY);
-    if (!workerUrl) { showSetup(); return; }
+    const workerUrl = WORKER_URL;
 
     document.getElementById('table-body').innerHTML = `
       <div class="state-box">
