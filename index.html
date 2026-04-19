@@ -18,6 +18,9 @@
     --green: #16a34a;
     --green-light: #f0fdf4;
     --green-border: #bbf7d0;
+    --orange: #b45309;
+    --orange-light: #fffbeb;
+    --orange-border: #fde68a;
     --tag-bg: #f4f4f5;
     --shadow: 0 1px 2px rgba(0,0,0,0.05), 0 2px 8px rgba(0,0,0,0.04);
   }
@@ -45,329 +48,152 @@
     z-index: 100;
   }
 
-  .header-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .header-left h1 {
-    font-size: 15px;
-    font-weight: 600;
-    letter-spacing: -0.2px;
-  }
-
-  .header-divider {
-    width: 1px;
-    height: 16px;
-    background: rgba(255,255,255,0.2);
-  }
-
-  .header-left p {
-    font-size: 13px;
-    color: rgba(255,255,255,0.5);
-    font-weight: 400;
-  }
-
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
-  }
+  .header-left { display: flex; align-items: center; gap: 10px; }
+  .header-left h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.2px; }
+  .header-divider { width: 1px; height: 16px; background: rgba(255,255,255,0.2); }
+  .header-left p { font-size: 13px; color: rgba(255,255,255,0.5); font-weight: 400; }
+  .header-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 
   .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 8px 14px;
-    border-radius: 7px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    border: none;
-    transition: all 0.12s;
-    font-family: 'Inter', sans-serif;
-    -webkit-tap-highlight-color: transparent;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 8px 14px; border-radius: 7px; font-size: 13px; font-weight: 500;
+    cursor: pointer; border: none; transition: all 0.12s;
+    font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent;
   }
-
-  .btn-ghost {
-    background: rgba(255,255,255,0.1);
-    color: #fff;
-    border: 1px solid rgba(255,255,255,0.18);
-  }
+  .btn-ghost { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.18); }
   .btn-ghost:active { background: rgba(255,255,255,0.2); }
 
   #main-content { display: none; padding: 16px; max-width: 760px; margin: 0 auto; }
 
-  .stats-bar {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    margin-bottom: 14px;
-  }
+  .stats-bar { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; box-shadow: var(--shadow); }
+  .stat-num { font-size: 26px; font-weight: 600; line-height: 1; color: var(--accent); letter-spacing: -0.5px; }
+  .stat-label { font-size: 11px; color: var(--muted); margin-top: 3px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
 
-  .stat-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 16px;
-    box-shadow: var(--shadow);
-  }
+  .controls { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
 
-  .stat-num {
-    font-size: 26px;
-    font-weight: 600;
-    line-height: 1;
-    color: var(--accent);
-    letter-spacing: -0.5px;
-  }
-
-  .stat-label {
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 3px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .controls {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
-    align-items: center;
-  }
-
-  .select-wrap {
-    position: relative;
-    flex: 1;
-  }
-
+  .select-wrap { position: relative; flex: 1; }
   .select-wrap select {
-    width: 100%;
-    background: var(--surface);
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
-    padding: 9px 32px 9px 12px;
-    font-size: 13px;
-    font-family: 'Inter', sans-serif;
-    color: var(--text);
-    outline: none;
-    appearance: none;
-    cursor: pointer;
-    transition: border-color 0.12s;
-    font-weight: 500;
+    width: 100%; background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 8px; padding: 9px 32px 9px 12px; font-size: 13px;
+    font-family: 'Inter', sans-serif; color: var(--text); outline: none;
+    appearance: none; cursor: pointer; transition: border-color 0.12s; font-weight: 500;
   }
-
   .select-wrap select:focus { border-color: var(--accent); }
-
   .select-wrap::after {
-    content: '';
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 0;
-    height: 0;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
-    border-top: 5px solid var(--muted);
-    pointer-events: none;
+    content: ''; position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    width: 0; height: 0; border-left: 4px solid transparent;
+    border-right: 4px solid transparent; border-top: 5px solid var(--muted); pointer-events: none;
   }
 
-  .search-wrap {
-    position: relative;
-    flex: 1;
-  }
-
+  .search-wrap { position: relative; flex: 1; }
   .search-wrap input {
-    background: var(--surface);
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
-    padding: 9px 12px;
-    font-size: 13px;
-    font-family: 'Inter', sans-serif;
-    color: var(--text);
-    outline: none;
-    width: 100%;
-    transition: border-color 0.12s;
+    background: var(--surface); border: 1.5px solid var(--border); border-radius: 8px;
+    padding: 9px 12px; font-size: 13px; font-family: 'Inter', sans-serif;
+    color: var(--text); outline: none; width: 100%; transition: border-color 0.12s;
   }
-
   .search-wrap input:focus { border-color: var(--accent); }
   .search-wrap input::placeholder { color: var(--muted); }
 
-  .packing-table {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: var(--shadow);
-  }
+  .packing-table { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; box-shadow: var(--shadow); }
 
   .table-header {
-    display: grid;
-    grid-template-columns: 36px 1fr 64px;
-    background: var(--tag-bg);
-    border-bottom: 1px solid var(--border);
-    padding: 9px 14px;
-    gap: 10px;
-    align-items: center;
+    display: grid; grid-template-columns: 36px 1fr 64px;
+    background: var(--tag-bg); border-bottom: 1px solid var(--border);
+    padding: 9px 14px; gap: 10px; align-items: center;
   }
-
-  .table-header span {
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    color: var(--muted);
-  }
-
+  .table-header span { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); }
   .table-header span:last-child { text-align: center; }
 
+  /* Regular rows */
   .packing-row {
-    display: grid;
-    grid-template-columns: 36px 1fr 64px;
-    align-items: center;
-    padding: 12px 14px;
-    border-bottom: 1px solid var(--border);
-    gap: 10px;
-    transition: background 0.1s;
+    display: grid; grid-template-columns: 36px 1fr 64px;
+    align-items: center; padding: 12px 14px;
+    border-bottom: 1px solid var(--border); gap: 10px; transition: background 0.1s;
   }
-
   .packing-row:last-child { border-bottom: none; }
   .packing-row.hidden { display: none; }
-
-  .packing-row.checked {
-    background: #fafafa;
-  }
-
-  .packing-row.checked .item-name {
-    color: var(--muted);
-    text-decoration: line-through;
-  }
-
+  .packing-row.checked { background: #fafafa; }
+  .packing-row.checked .item-name { color: var(--muted); text-decoration: line-through; }
   .packing-row.checked .item-variant { opacity: 0.5; }
+  .packing-row.checked .qty-badge { background: var(--tag-bg); color: var(--muted); border-color: var(--border); }
 
-  .packing-row.checked .qty-badge {
-    background: var(--tag-bg);
-    color: var(--muted);
-    border-color: var(--border);
-  }
-
-  .item-check {
+  /* Bundle section header (single order view) */
+  .bundle-header {
+    padding: 10px 14px 6px;
+    border-bottom: 1px solid var(--border);
+    background: var(--orange-light);
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 8px;
   }
-
-  .item-check input[type="checkbox"] {
-    width: 20px;
-    height: 20px;
-    accent-color: var(--green);
-    cursor: pointer;
-    flex-shrink: 0;
+  .bundle-header-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--orange);
+    flex: 1;
   }
-
-  .item-name {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text);
-    line-height: 1.3;
-    transition: color 0.1s;
-  }
-
-  .item-variant {
-    display: inline-block;
-    margin-top: 3px;
-    font-size: 11px;
-    background: var(--tag-bg);
-    color: var(--muted);
+  .bundle-badge {
+    font-size: 10px;
+    font-weight: 600;
+    background: var(--orange-border);
+    color: var(--orange);
     border-radius: 4px;
     padding: 2px 7px;
-    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
   }
 
-  .item-orders {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 3px;
-    margin-top: 5px;
+  /* Bundle component rows (indented, slightly different) */
+  .bundle-row {
+    display: grid; grid-template-columns: 36px 1fr 64px;
+    align-items: center; padding: 10px 14px 10px 24px;
+    border-bottom: 1px solid var(--border); gap: 10px;
+    background: #fffdf9;
+    transition: background 0.1s;
   }
+  .bundle-row:last-child { border-bottom: none; }
+  .bundle-row.checked { background: #fafaf8; }
+  .bundle-row.checked .item-name { color: var(--muted); text-decoration: line-through; }
+  .bundle-row.checked .qty-badge { background: var(--tag-bg); color: var(--muted); border-color: var(--border); }
 
-  .order-tag {
-    font-size: 11px;
-    font-weight: 500;
-    background: var(--green-light);
-    color: var(--green);
-    border-radius: 4px;
-    padding: 1px 6px;
-    border: 1px solid var(--green-border);
-  }
+  .item-check { display: flex; align-items: center; justify-content: center; }
+  .item-check input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--green); cursor: pointer; flex-shrink: 0; }
+
+  .item-name { font-size: 14px; font-weight: 500; color: var(--text); line-height: 1.3; transition: color 0.1s; }
+  .item-name.bundle-item-name { font-size: 13px; }
+
+  .item-variant { display: inline-block; margin-top: 3px; font-size: 11px; background: var(--tag-bg); color: var(--muted); border-radius: 4px; padding: 2px 7px; font-weight: 500; }
+
+  .item-orders { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 5px; }
+  .order-tag { font-size: 11px; font-weight: 500; background: var(--green-light); color: var(--green); border-radius: 4px; padding: 1px 6px; border: 1px solid var(--green-border); }
+  .bundle-tag { font-size: 10px; font-weight: 600; background: var(--orange-light); color: var(--orange); border-radius: 4px; padding: 1px 6px; border: 1px solid var(--orange-border); margin-top: 3px; display: inline-block; }
 
   .item-qty { text-align: center; }
-
   .qty-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    background: var(--accent-light);
-    color: var(--accent);
-    border: 1.5px solid var(--accent-border);
-    border-radius: 8px;
-    font-size: 17px;
-    font-weight: 600;
-    transition: all 0.1s;
-    letter-spacing: -0.5px;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 40px; height: 40px; background: var(--accent-light); color: var(--accent);
+    border: 1.5px solid var(--accent-border); border-radius: 8px; font-size: 17px;
+    font-weight: 600; transition: all 0.1s; letter-spacing: -0.5px;
   }
+  .qty-badge.small { width: 34px; height: 34px; font-size: 14px; }
 
-  .state-box {
-    text-align: center;
-    padding: 48px 20px;
-    color: var(--muted);
-  }
-
+  .state-box { text-align: center; padding: 48px 20px; color: var(--muted); }
   .state-box h3 { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
   .state-box p { font-size: 13px; line-height: 1.5; }
 
   .error-banner {
-    background: var(--accent-light);
-    border: 1px solid var(--accent-border);
-    border-radius: 8px;
-    padding: 12px 14px;
-    font-size: 13px;
-    color: var(--accent);
-    margin-bottom: 14px;
-    display: none;
-    line-height: 1.5;
-    font-weight: 500;
+    background: var(--accent-light); border: 1px solid var(--accent-border); border-radius: 8px;
+    padding: 12px 14px; font-size: 13px; color: var(--accent); margin-bottom: 14px;
+    display: none; line-height: 1.5; font-weight: 500;
   }
 
-  .loading-dots span {
-    display: inline-block;
-    width: 7px;
-    height: 7px;
-    background: var(--accent);
-    border-radius: 50%;
-    margin: 0 3px;
-    animation: bounce 1s infinite;
-  }
+  .loading-dots span { display: inline-block; width: 7px; height: 7px; background: var(--accent); border-radius: 50%; margin: 0 3px; animation: bounce 1s infinite; }
   .loading-dots span:nth-child(2) { animation-delay: 0.15s; }
   .loading-dots span:nth-child(3) { animation-delay: 0.3s; }
-  @keyframes bounce {
-    0%, 80%, 100% { transform: translateY(0); opacity: 0.35; }
-    40% { transform: translateY(-7px); opacity: 1; }
-  }
+  @keyframes bounce { 0%, 80%, 100% { transform: translateY(0); opacity: 0.35; } 40% { transform: translateY(-7px); opacity: 1; } }
 
-  .last-updated {
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 12px;
-    text-align: right;
-  }
+  .last-updated { font-size: 11px; color: var(--muted); margin-top: 12px; text-align: right; }
 </style>
 </head>
 <body>
@@ -428,6 +254,96 @@
 <script>
   const WORKER_URL = 'https://packing-list.ketan-k1296.workers.dev';
 
+  // ── BUNDLE DEFINITIONS ──────────────────────────────────────────────────────
+  // Key: product title (lowercase, partial match ok via includes())
+  // Each component: { name, size } — size shown as variant tag
+  const BUNDLES = {
+    'indian cooking essentials kit': {
+      variants: {
+        'jars': [
+          { name: 'Turmeric Powder',    size: '65g Jar' },
+          { name: 'Garam Masala',       size: '50g Jar' },
+          { name: 'Red Chilli Powder',  size: '55g Jar' },
+          { name: 'Jeera (Cumin Seeds)',size: '55g Jar' },
+          { name: 'Dhana Jeera Powder', size: '45g Jar' },
+        ],
+        'pouches': [
+          { name: 'Turmeric Powder',    size: '100g Pouch' },
+          { name: 'Garam Masala',       size: '100g Pouch' },
+          { name: 'Red Chilli Powder',  size: '100g Pouch' },
+          { name: 'Jeera (Cumin Seeds)',size: '90g Pouch' },
+          { name: 'Dhana Jeera Powder', size: '85g Pouch' },
+        ],
+      }
+    },
+    'indian spice box': {
+      components: [
+        { name: 'Red Chilli Powder',              size: '55g' },
+        { name: 'Turmeric Powder',                size: '65g' },
+        { name: 'Cloves',                         size: '50g' },
+        { name: 'Jeera (Cumin Seeds)',             size: '55g' },
+        { name: 'Dhana Jeera (Cumin Coriander)',   size: '50g' },
+        { name: 'Garam Masala',                   size: '50g' },
+        { name: 'Cardamom Pods',                  size: '50g' },
+        { name: 'Traditional Spoon',              size: '' },
+      ]
+    },
+    '4-pack: chicken curry spice mix set': {
+      components: [
+        { name: 'Butter Chicken Spice Mix',        size: '70g Jar' },
+        { name: 'Tandoori Chicken Spice Mix',      size: '60g Jar' },
+        { name: 'Biryani Spice Mix',               size: '70g Jar' },
+        { name: 'Chicken Tikka Masala Spice Mix',  size: '70g Jar' },
+      ]
+    },
+    '4-pack: whole spices set': {
+      components: [
+        { name: 'Cardamom Pods',                           size: '50g Jar' },
+        { name: 'Kasoori Methi (Dried Fenugreek Leaves)',  size: '10g Jar' },
+        { name: 'Cloves',                                  size: '40g Jar' },
+        { name: 'Jeera (Cumin Seeds)',                     size: '55g Jar' },
+      ]
+    },
+    '8-pack: meat feast spice gift set': {
+      components: [
+        { name: 'Butter Chicken Spice Mix',                size: '70g Jar' },
+        { name: 'Tandoori Chicken Spice Mix',              size: '60g Jar' },
+        { name: 'Biryani Spice Mix',                       size: '70g Jar' },
+        { name: 'Chicken Tikka Masala Spice Mix',          size: '70g Jar' },
+        { name: 'Garam Masala',                            size: '50g Jar' },
+        { name: 'Kashmiri Chilli Powder',                  size: '50g Jar' },
+        { name: 'Kasoori Methi (Dried Fenugreek Leaves)',  size: '10g Jar' },
+        { name: 'Turmeric Powder',                        size: '65g Jar' },
+      ]
+    },
+  };
+
+  // Returns bundle def if item title matches, else null
+  function getBundleDef(title) {
+    const tl = title.toLowerCase();
+    for (const [key, def] of Object.entries(BUNDLES)) {
+      if (tl.includes(key)) return { key, def };
+    }
+    return null;
+  }
+
+  // Get components for an item (handles variant-specific bundles)
+  function getBundleComponents(title, variantTitle) {
+    const match = getBundleDef(title);
+    if (!match) return null;
+    const { def } = match;
+    if (def.variants) {
+      const vk = (variantTitle || '').toLowerCase();
+      for (const [vname, comps] of Object.entries(def.variants)) {
+        if (vk.includes(vname)) return comps;
+      }
+      // fallback: first variant
+      return Object.values(def.variants)[0];
+    }
+    return def.components || null;
+  }
+
+  // ── STATE ───────────────────────────────────────────────────────────────────
   const checkedState = {};
   let allRows = [];
   let allOrders = [];
@@ -438,6 +354,7 @@
     loadOrders();
   });
 
+  // ── LOAD ORDERS ─────────────────────────────────────────────────────────────
   async function loadOrders() {
     document.getElementById('table-body').innerHTML = `
       <div class="state-box">
@@ -461,27 +378,61 @@
     }
   }
 
+  // ── BUILD PACKING LIST ───────────────────────────────────────────────────────
+  // Explodes bundles into individual components for the grouped "all orders" view
   function buildPackingList(orders) {
     const grouped = {};
 
     for (const order of orders) {
       for (const item of order.line_items) {
-        const key = String(item.variant_id || (item.product_id + '_' + item.title));
-        if (!grouped[key]) {
-          grouped[key] = {
-            key,
-            name: item.title,
-            variant: item.variant_title && item.variant_title !== 'Default Title' ? item.variant_title : null,
-            qty: 0,
-            orders: [],
-            orderNums: []
-          };
-        }
-        grouped[key].qty += item.quantity;
-        const tag = '#' + order.order_number;
-        if (!grouped[key].orders.includes(tag)) {
-          grouped[key].orders.push(tag);
-          grouped[key].orderNums.push(order.order_number);
+        const rawKey = String(item.variant_id || (item.product_id + '_' + item.title));
+        const components = getBundleComponents(item.title, item.variant_title);
+
+        if (components) {
+          // Explode bundle — add each component multiplied by bundle quantity
+          for (let ci = 0; ci < components.length; ci++) {
+            const comp = components[ci];
+            const key = 'bundle_' + rawKey + '_comp_' + ci;
+            if (!grouped[key]) {
+              grouped[key] = {
+                key,
+                name: comp.name,
+                variant: comp.size || null,
+                qty: 0,
+                orders: [],
+                orderNums: [],
+                isBundle: false, // it's a component, shows as normal row
+                bundleSource: item.title, // for the "from bundle" tag
+              };
+            }
+            grouped[key].qty += item.quantity; // each bundle = 1 of this component
+            const tag = '#' + order.order_number;
+            if (!grouped[key].orders.includes(tag)) {
+              grouped[key].orders.push(tag);
+              grouped[key].orderNums.push(order.order_number);
+            }
+          }
+        } else {
+          // Normal product
+          const key = rawKey;
+          if (!grouped[key]) {
+            grouped[key] = {
+              key,
+              name: item.title,
+              variant: item.variant_title && item.variant_title !== 'Default Title' ? item.variant_title : null,
+              qty: 0,
+              orders: [],
+              orderNums: [],
+              isBundle: false,
+              bundleSource: null,
+            };
+          }
+          grouped[key].qty += item.quantity;
+          const tag = '#' + order.order_number;
+          if (!grouped[key].orders.includes(tag)) {
+            grouped[key].orders.push(tag);
+            grouped[key].orderNums.push(order.order_number);
+          }
         }
       }
     }
@@ -492,7 +443,7 @@
     document.getElementById('stat-orders').textContent = orders.length;
     document.getElementById('stat-items').textContent = totalItems;
 
-    // Build order dropdown
+    // Build dropdown
     const select = document.getElementById('order-filter');
     const currentVal = select.value;
     select.innerHTML = '<option value="all">All orders</option>';
@@ -502,9 +453,7 @@
       opt.textContent = '#' + o.order_number;
       select.appendChild(opt);
     });
-    if ([...select.options].some(o => o.value === currentVal)) {
-      select.value = currentVal;
-    }
+    if ([...select.options].some(o => o.value === currentVal)) select.value = currentVal;
 
     renderRows();
     updateDropdownStatus();
@@ -513,49 +462,92 @@
       'Updated ' + new Date().toLocaleTimeString('en-AU', { timeZone: 'Australia/Brisbane' });
   }
 
+  // ── RENDER ───────────────────────────────────────────────────────────────────
   function renderRows() {
     const tbody = document.getElementById('table-body');
     const orderFilter = document.getElementById('order-filter').value;
     const q = document.getElementById('search-input').value.toLowerCase().trim();
     const isFiltered = orderFilter !== 'all';
 
-    const visibleRows = allRows.filter(r => {
-      const matchesOrder = !isFiltered || r.orderNums.includes(parseInt(orderFilter));
-      const matchesSearch = !q || (r.name + ' ' + (r.variant || '')).toLowerCase().includes(q);
-      return matchesOrder && matchesSearch;
-    });
-
     if (allRows.length === 0) {
-      tbody.innerHTML = `
-        <div class="state-box">
-          <div style="font-size:32px;margin-bottom:8px;">🎉</div>
-          <h3>All clear!</h3>
-          <p>No unfulfilled orders right now.</p>
-        </div>`;
+      tbody.innerHTML = `<div class="state-box"><div style="font-size:32px;margin-bottom:8px;">🎉</div><h3>All clear!</h3><p>No unfulfilled orders right now.</p></div>`;
       return;
     }
 
+    // ── SINGLE ORDER VIEW ──────────────────────────────────────────────────────
+    if (isFiltered) {
+      const orderNum = parseInt(orderFilter);
+      const order = allOrders.find(o => o.order_number === orderNum);
+      if (!order) { tbody.innerHTML = ''; return; }
+
+      let html = '';
+      for (const item of order.line_items) {
+        const components = getBundleComponents(item.title, item.variant_title);
+        const variantLabel = item.variant_title && item.variant_title !== 'Default Title' ? item.variant_title : null;
+
+        if (components) {
+          // Bundle: show header + component rows
+          const bundleKey = 'bundle_order_' + order.order_number + '_' + item.variant_id;
+          html += `
+            <div class="bundle-header">
+              <span class="bundle-header-label">${esc(item.title)}${variantLabel ? ' — ' + esc(variantLabel) : ''}</span>
+              <span class="bundle-badge">Bundle × ${item.quantity}</span>
+            </div>`;
+
+          components.forEach((comp, ci) => {
+            const key = 'bundle_order_' + order.order_number + '_' + (item.variant_id || item.product_id) + '_comp_' + ci;
+            const isChecked = !!checkedState[key];
+            const qty = item.quantity;
+            html += `
+              <div class="bundle-row${isChecked ? ' checked' : ''}" id="row-${key}">
+                <div class="item-check">
+                  <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleCheck('${key}', this)" />
+                </div>
+                <div>
+                  <div class="item-name bundle-item-name">${esc(comp.name)}</div>
+                  ${comp.size ? `<span class="item-variant">${esc(comp.size)}</span>` : ''}
+                </div>
+                <div class="item-qty">
+                  <span class="qty-badge small">${qty}</span>
+                </div>
+              </div>`;
+          });
+        } else {
+          // Normal item
+          const key = String(item.variant_id || (item.product_id + '_' + item.title));
+          const isChecked = !!checkedState[key];
+          html += `
+            <div class="packing-row${isChecked ? ' checked' : ''}" id="row-${key}">
+              <div class="item-check">
+                <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleCheck('${key}', this)" />
+              </div>
+              <div>
+                <div class="item-name">${esc(item.title)}</div>
+                ${variantLabel ? `<span class="item-variant">${esc(variantLabel)}</span>` : ''}
+              </div>
+              <div class="item-qty">
+                <span class="qty-badge">${item.quantity}</span>
+              </div>
+            </div>`;
+        }
+      }
+
+      tbody.innerHTML = html || `<div class="state-box"><p>No items in this order.</p></div>`;
+      return;
+    }
+
+    // ── ALL ORDERS VIEW ────────────────────────────────────────────────────────
+    const visibleRows = allRows.filter(r => {
+      return !q || (r.name + ' ' + (r.variant || '')).toLowerCase().includes(q);
+    });
+
     if (visibleRows.length === 0) {
-      tbody.innerHTML = `<div class="state-box"><p>No items match your filter.</p></div>`;
+      tbody.innerHTML = `<div class="state-box"><p>No items match your search.</p></div>`;
       return;
     }
 
     tbody.innerHTML = visibleRows.map(r => {
       const isChecked = !!checkedState[r.key];
-
-      // When filtering by a specific order, show qty for that order only
-      let displayQty = r.qty;
-      if (isFiltered) {
-        const orderNum = parseInt(orderFilter);
-        const order = allOrders.find(o => o.order_number === orderNum);
-        if (order) {
-          const item = order.line_items.find(i =>
-            String(i.variant_id || (i.product_id + '_' + i.title)) === r.key
-          );
-          if (item) displayQty = item.quantity;
-        }
-      }
-
       return `
         <div class="packing-row${isChecked ? ' checked' : ''}" id="row-${r.key}">
           <div class="item-check">
@@ -564,18 +556,19 @@
           <div>
             <div class="item-name">${esc(r.name)}</div>
             ${r.variant ? `<span class="item-variant">${esc(r.variant)}</span>` : ''}
-            ${!isFiltered ? `
+            ${r.bundleSource ? `<span class="bundle-tag">from ${esc(r.bundleSource)}</span>` : ''}
             <div class="item-orders">
               ${r.orders.map(o => `<span class="order-tag">${esc(o)}</span>`).join('')}
-            </div>` : ''}
+            </div>
           </div>
           <div class="item-qty">
-            <span class="qty-badge">${displayQty}</span>
+            <span class="qty-badge">${r.qty}</span>
           </div>
         </div>`;
     }).join('');
   }
 
+  // ── CHECKBOX ─────────────────────────────────────────────────────────────────
   function toggleCheck(key, checkbox) {
     checkedState[key] = checkbox.checked;
     const row = document.getElementById('row-' + key);
@@ -583,6 +576,7 @@
     updateDropdownStatus();
   }
 
+  // ── DROPDOWN COMPLETION ───────────────────────────────────────────────────────
   function updateDropdownStatus() {
     const select = document.getElementById('order-filter');
     [...select.options].forEach(opt => {
@@ -591,9 +585,19 @@
       const order = allOrders.find(o => o.order_number === orderNum);
       if (!order) return;
 
-      const keys = order.line_items.map(i =>
-        String(i.variant_id || (i.product_id + '_' + i.title))
-      );
+      // Build all keys for this order (including bundle component keys)
+      const keys = [];
+      order.line_items.forEach(item => {
+        const components = getBundleComponents(item.title, item.variant_title);
+        if (components) {
+          components.forEach((_, ci) => {
+            keys.push('bundle_order_' + order.order_number + '_' + (item.variant_id || item.product_id) + '_comp_' + ci);
+          });
+        } else {
+          keys.push(String(item.variant_id || (item.product_id + '_' + item.title)));
+        }
+      });
+
       const allDone = keys.length > 0 && keys.every(k => checkedState[k]);
       opt.textContent = (allDone ? '✓ ' : '') + '#' + order.order_number;
     });
