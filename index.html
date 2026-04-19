@@ -330,7 +330,7 @@
     <div class="table-header">
       <span></span>
       <span>Product / Variant</span>
-      <span style="text-align:center;">Qty</span>
+      <span style="text-align:center;">#</span>
     </div>
     <div id="table-body">
       <div class="state-box">
@@ -345,6 +345,448 @@
 
 <script>
   const WORKER_URL = 'https://packing-list.ketan-k1296.workers.dev';
+  const STORAGE_KEY = 'tis_checked_v1';
+
+  // ── JAR + REFILL POUCH DEFINITIONS ──────────────────────────────────────────
+  const JAR_POUCH_PRODUCTS = {
+    'dhana jeera':    { jar: '45g Jar',  pouch: '85g Pouch' },
+    'garam masala':   { jar: '150g Jar', pouch: '100g Pouch' },
+    'cinnamon':       { jar: '45g Jar',  pouch: '100g Pouch' },
+    'garlic powder':  { jar: '70g Jar',  pouch: '100g Pouch' },
+    'red chilli':     { jar: '55g Jar',  pouch: '100g Pouch' },
+    'kashmiri chilli':{ jar: '50g Jar',  pouch: '100g Pouch' },
+    'turmeric':       { jar: '65g Jar',  pouch: '100g Pouch' },
+    'cardamom':       { jar: '50g Jar',  pouch: '55g Pouch' },
+    'cloves':         { jar: '40g Jar',  pouch: '70g Pouch' },
+    'jeera':          { jar: '55g Jar',  pouch: '90g Pouch' },
+    'black pepper':   { jar: '60g Jar',  pouch: '100g Pouch' },
+  };
+
+  function getJarPouchSizes(title, variantTitle) {
+    if (!variantTitle || !variantTitle.toLowerCase().includes('jar + refill pouch')) return null;
+    const tl = title.toLowerCase();
+    for (const [key, sizes] of Object.entries(JAR_POUCH_PRODUCTS)) {
+      if (tl.includes(key)) return sizes;
+    }
+    return null;
+  }
+
+  // ── BUNDLE DEFINITIONS ──────────────────────────────────────────────────────
+  const BUNDLES = {
+    'indian cooking essentials kit': {
+      variants: {
+        'jars': [
+          { name: 'Turmeric Powder',    size: '65g Jar' },
+          { name: 'Garam Masala',       size: '50g Jar' },
+          { name: 'Red Chilli Powder',  size: '55g Jar' },
+          { name: 'Jeera (Cumin Seeds)',size: '55g Jar' },
+          { name: 'Dhana Jeera Powder', size: '45g Jar' },
+        ],
+        'pouches': [
+          { name: 'Turmeric Powder',    size: '100g Pouch' },
+          { name: 'Garam Masala',       size: '100g Pouch' },
+          { name: 'Red Chilli Powder',  size: '100g Pouch' },
+          { name: 'Jeera (Cumin Seeds)',size: '90g Pouch' },
+          { name: 'Dhana Jeera Powder', size: '85g Pouch' },
+        ],
+      }
+    },
+    'indian spice box': {
+      components: [
+        { name: 'Red Chilli Powder',            size: '55g' },
+        { name: 'Turmeric Powder',              size: '65g' },
+        { name: 'Cloves',                       size: '50g' },
+        { name: 'Jeera (Cumin Seeds)',          size: '55g' },
+        { name: 'Dhana Jeera (Cumin Coriander)',size: '50g' },
+        { name: 'Garam Masala',                 size: '50g' },
+        { name: 'Cardamom Pods',               size: '50g' },
+        { name: 'Traditional Spoon',            size: '' },
+      ]
+    },
+    '4-pack: chicken curry spice mix set': {
+      components: [
+        { name: 'Butter Chicken Spice Mix',       size: '70g Jar' },
+        { name: 'Tandoori Chicken Spice Mix',     size: '60g Jar' },
+        { name: 'Biryani Spice Mix',              size: '70g Jar' },
+        { name: 'Chicken Tikka Masala Spice Mix', size: '70g Jar' },
+      ]
+    },
+    '4-pack: whole spices set': {
+      components: [
+        { name: 'Cardamom Pods',                          size: '50g Jar' },
+        { name: 'Kasoori Methi (Dried Fenugreek Leaves)', size: '10g Jar' },
+        { name: 'Cloves',                                 size: '40g Jar' },
+        { name: 'Jeera (Cumin Seeds)',                    size: '55g Jar' },
+      ]
+    },
+    '8-pack: meat feast spice gift set': {
+      components: [
+        { name: 'Butter Chicken Spice Mix',               size: '70g Jar' },
+        { name: 'Tandoori Chicken Spice Mix',             size: '60g Jar' },
+        { name: 'Biryani Spice Mix',                      size: '70g Jar' },
+        { name: 'Chicken Tikka Masala Spice Mix',         size: '70g Jar' },
+        { name: 'Garam Masala',                           size: '50g Jar' },
+        { name: 'Kashmiri Chilli Powder',                 size: '50g Jar' },
+        { name: 'Kasoori Methi (Dried Fenugreek Leaves)', size: '10g Jar' },
+        { name: 'Turmeric Powder',                        size: '65g Jar' },
+      ]
+    },
+  };
+
+  function getBundleDef(title) {
+    const tl = title.toLowerCase();
+    for (const [key, def] of Object.entries(BUNDLES)) {
+      if (tl.includes(key)) return { key, def };
+    }
+    return null;
+  }
+
+  function getBundleComponents(title, variantTitle) {
+    const match = getBundleDef(title);
+    if (!match) return null;
+    const { def } = match;
+    if (def.variants) {
+      const vk = (variantTitle || '').toLowerCase();
+      for (const [vname, comps] of Object.entries(def.variants)) {
+        if (vk.includes(vname)) return comps;
+      }
+      return Object.values(def.variants)[0];
+    }
+    return def.components || null;
+  }
+
+  // ── STATE ────────────────────────────────────────────────────────────────────
+  // checkedState: key => true/false, persisted to localStorage
+  let checkedState = {};
+  let allRows = [];      // unit rows for the all-orders view
+  let allOrders = [];
+  let allUnitKeys = [];  // all keys that exist this session (for progress)
+
+  function loadCheckedState() {
+    try { checkedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { checkedState = {}; }
+  }
+
+  function saveCheckedState() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(checkedState)); } catch {}
+  }
+
+  function clearCheckedState() {
+    checkedState = {};
+    try { localStorage.removeItem(STORAGE_KEY); } catch {}
+  }
+
+  // ── UNIT KEY HELPERS ─────────────────────────────────────────────────────────
+  // Each physical unit gets its own unique key: base_key + '_unit_N'
+  // This is what gets stored in checkedState and rendered as individual rows.
+
+  function getUnitKeys(baseKey, qty) {
+    return Array.from({ length: qty }, (_, i) => baseKey + '_unit_' + i);
+  }
+
+  // ── INIT ─────────────────────────────────────────────────────────────────────
+  window.addEventListener('DOMContentLoaded', () => {
+    loadCheckedState();
+    document.getElementById('main-content').style.display = 'block';
+    document.getElementById('header-actions').style.display = 'flex';
+    loadOrders();
+  });
+
+  // ── LOAD ORDERS ──────────────────────────────────────────────────────────────
+  async function loadOrders() {
+    document.getElementById('table-body').innerHTML = `
+      <div class="state-box">
+        <div class="loading-dots"><span></span><span></span><span></span></div>
+        <p style="margin-top:10px;">Fetching orders...</p>
+      </div>`;
+    document.getElementById('main-error').style.display = 'none';
+
+    try {
+      const resp = await fetch(WORKER_URL);
+      if (!resp.ok) throw new Error(`Worker returned ${resp.status}`);
+      const data = await resp.json();
+      if (data.error) throw new Error(data.error);
+      allOrders = data.orders || [];
+      // Clear checked state on refresh so stale keys don't linger
+      clearCheckedState();
+      buildPackingList(allOrders);
+    } catch(e) {
+      const el = document.getElementById('main-error');
+      el.textContent = 'Could not load orders: ' + e.message;
+      el.style.display = 'block';
+      document.getElementById('table-body').innerHTML = '';
+    }
+  }
+
+  // ── BUILD PACKING LIST ────────────────────────────────────────────────────────
+  // Produces allRows: one entry per unique name+variant, with total qty
+  // Unit rows are expanded at render time
+  function buildPackingList(orders) {
+    const grouped = {};
+
+    function addToGroup(name, size, qty, orderNum, orderTag) {
+      const key = (name + '||' + (size || '')).toLowerCase();
+      if (!grouped[key]) {
+        grouped[key] = { key, name, variant: size || null, qty: 0, orders: [], orderNums: [] };
+      }
+      grouped[key].qty += qty;
+      if (!grouped[key].orders.includes(orderTag)) {
+        grouped[key].orders.push(orderTag);
+        grouped[key].orderNums.push(orderNum);
+      }
+    }
+
+    for (const order of orders) {
+      const orderTag = '#' + order.order_number;
+      for (const item of order.line_items) {
+        const components = getBundleComponents(item.title, item.variant_title);
+        const jarPouch = getJarPouchSizes(item.title, item.variant_title);
+        if (components) {
+          for (const comp of components) {
+            addToGroup(comp.name, comp.size, item.quantity, order.order_number, orderTag);
+          }
+        } else if (jarPouch) {
+          addToGroup(item.title, jarPouch.jar, item.quantity, order.order_number, orderTag);
+          addToGroup(item.title, jarPouch.pouch, item.quantity, order.order_number, orderTag);
+        } else {
+          const size = item.variant_title && item.variant_title !== 'Default Title' ? item.variant_title : null;
+          addToGroup(item.title, size, item.quantity, order.order_number, orderTag);
+        }
+      }
+    }
+
+    allRows = Object.values(grouped).sort((a, b) => {
+      const n = a.name.localeCompare(b.name);
+      return n !== 0 ? n : (a.variant || '').localeCompare(b.variant || '');
+    });
+
+    // Build master list of all unit keys for progress tracking
+    allUnitKeys = [];
+    allRows.forEach(r => {
+      getUnitKeys(r.key, r.qty).forEach(k => allUnitKeys.push(k));
+    });
+
+    const totalUnits = allUnitKeys.length;
+    document.getElementById('stat-orders').textContent = orders.length;
+    document.getElementById('stat-items').textContent = totalUnits;
+
+    // Build dropdown
+    const select = document.getElementById('order-filter');
+    const currentVal = select.value;
+    select.innerHTML = '<option value="all">All orders</option>';
+    orders.forEach(o => {
+      const opt = document.createElement('option');
+      opt.value = o.order_number;
+      opt.textContent = '#' + o.order_number;
+      select.appendChild(opt);
+    });
+    if ([...select.options].some(o => o.value === currentVal)) select.value = currentVal;
+
+    renderRows();
+    updateDropdownStatus();
+    updateProgress();
+
+    document.getElementById('last-updated').textContent =
+      'Updated ' + new Date().toLocaleTimeString('en-AU', { timeZone: 'Australia/Brisbane' });
+  }
+
+  // ── RENDER UNIT ROWS ──────────────────────────────────────────────────────────
+  // Renders individual unit rows (one per physical item)
+  function renderUnitRows(name, variant, qty, baseKey, showOrders, orders, isSmall) {
+    return getUnitKeys(baseKey, qty).map((unitKey, i) => {
+      const isChecked = !!checkedState[unitKey];
+      const rowClass = isSmall ? 'bundle-row' : 'packing-row';
+      return `
+        <div class="${rowClass}${isChecked ? ' checked' : ''}" id="row-${unitKey}">
+          <div class="item-check">
+            <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleCheck('${unitKey}', this)" />
+          </div>
+          <div>
+            <div class="item-name${isSmall ? ' bundle-item-name' : ''}">${esc(name)}</div>
+            ${variant ? `<span class="item-variant">${esc(variant)}</span>` : ''}
+            ${showOrders && orders ? `<div class="item-orders">${orders.map(o => `<span class="order-tag">${esc(o)}</span>`).join('')}</div>` : ''}
+          </div>
+          <div class="item-qty" style="font-size:11px;color:var(--muted);text-align:center;font-weight:500;">${i + 1}/${qty}</div>
+        </div>`;
+    }).join('');
+  }
+
+  // ── RENDER ────────────────────────────────────────────────────────────────────
+  function renderRows() {
+    const tbody = document.getElementById('table-body');
+    const orderFilter = document.getElementById('order-filter').value;
+    const q = document.getElementById('search-input').value.toLowerCase().trim();
+    const isFiltered = orderFilter !== 'all';
+
+    if (allRows.length === 0) {
+      tbody.innerHTML = `<div class="state-box"><div style="font-size:32px;margin-bottom:8px;">🎉</div><h3>All clear!</h3><p>No unfulfilled orders right now.</p></div>`;
+      return;
+    }
+
+    // ── SINGLE ORDER VIEW ────────────────────────────────────────────────────
+    if (isFiltered) {
+      const orderNum = parseInt(orderFilter);
+      const order = allOrders.find(o => o.order_number === orderNum);
+      if (!order) { tbody.innerHTML = ''; return; }
+
+      let html = '';
+      for (const item of order.line_items) {
+        const components = getBundleComponents(item.title, item.variant_title);
+        const jarPouch = getJarPouchSizes(item.title, item.variant_title);
+        const variantLabel = item.variant_title && item.variant_title !== 'Default Title' ? item.variant_title : null;
+
+        if (components) {
+          html += `
+            <div class="bundle-header">
+              <span class="bundle-header-label">${esc(item.title)}${variantLabel ? ' — ' + esc(variantLabel) : ''}</span>
+              <span class="bundle-badge">Bundle × ${item.quantity}</span>
+            </div>`;
+          components.forEach((comp, ci) => {
+            const baseKey = 'bundle_order_' + order.order_number + '_' + (item.variant_id || item.product_id) + '_comp_' + ci;
+            html += renderUnitRows(comp.name, comp.size || null, item.quantity, baseKey, false, null, true);
+          });
+        } else if (jarPouch) {
+          html += `
+            <div class="bundle-header">
+              <span class="bundle-header-label">${esc(item.title)}${variantLabel ? ' — ' + esc(variantLabel) : ''}</span>
+              <span class="bundle-badge">Jar + Pouch × ${item.quantity}</span>
+            </div>`;
+          ['jar', 'pouch'].forEach(type => {
+            const baseKey = 'jarpouch_order_' + order.order_number + '_' + (item.variant_id || item.product_id) + '_' + type;
+            html += renderUnitRows(item.title, jarPouch[type], item.quantity, baseKey, false, null, true);
+          });
+        } else {
+          const baseKey = 'order_' + order.order_number + '_' + String(item.variant_id || (item.product_id + '_' + item.title));
+          html += renderUnitRows(item.title, variantLabel, item.quantity, baseKey, false, null, false);
+        }
+      }
+
+      tbody.innerHTML = html || `<div class="state-box"><p>No items in this order.</p></div>`;
+      updateProgress();
+      return;
+    }
+
+    // ── ALL ORDERS VIEW ──────────────────────────────────────────────────────
+    const visibleRows = allRows.filter(r =>
+      !q || (r.name + ' ' + (r.variant || '')).toLowerCase().includes(q)
+    );
+
+    if (visibleRows.length === 0) {
+      tbody.innerHTML = `<div class="state-box"><p>No items match your search.</p></div>`;
+      return;
+    }
+
+    let html = '';
+    let lastSpiceName = null;
+    visibleRows.forEach(r => {
+      if (r.name !== lastSpiceName) {
+        if (lastSpiceName !== null) html += `<div class="spice-divider">${esc(r.name)}</div>`;
+        lastSpiceName = r.name;
+      }
+      html += renderUnitRows(r.name, r.variant, r.qty, r.key, true, r.orders, false);
+    });
+    tbody.innerHTML = html;
+    updateProgress();
+  }
+
+  // ── CHECKBOX ──────────────────────────────────────────────────────────────────
+  function toggleCheck(key, checkbox) {
+    checkedState[key] = checkbox.checked;
+    saveCheckedState();
+    const row = document.getElementById('row-' + key);
+    if (row) {
+      if (checkbox.checked) {
+        row.classList.add('checking');
+        setTimeout(() => row.classList.remove('checking'), 400);
+      }
+      row.classList.toggle('checked', checkbox.checked);
+    }
+    updateDropdownStatus();
+    updateProgress();
+    checkOrderCompletion();
+  }
+
+  // ── PROGRESS ──────────────────────────────────────────────────────────────────
+  function updateProgress() {
+    const wrap = document.getElementById('progress-wrap');
+    const total = allUnitKeys.length;
+    if (total === 0) { wrap.style.display = 'none'; return; }
+    const checked = allUnitKeys.filter(k => checkedState[k]).length;
+    wrap.style.display = 'block';
+    const pct = Math.round((checked / total) * 100);
+    document.getElementById('progress-text').textContent = `${checked} of ${total} items packed`;
+    document.getElementById('progress-pct').textContent = pct + '%';
+    document.getElementById('progress-fill').style.width = pct + '%';
+  }
+
+  // ── TOAST ─────────────────────────────────────────────────────────────────────
+  let toastTimer = null;
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.innerHTML = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  // ── ORDER COMPLETION ──────────────────────────────────────────────────────────
+  const notifiedOrders = new Set();
+
+  function getOrderUnitKeys(order) {
+    const keys = [];
+    order.line_items.forEach(item => {
+      const components = getBundleComponents(item.title, item.variant_title);
+      const jarPouch = getJarPouchSizes(item.title, item.variant_title);
+      if (components) {
+        components.forEach((_, ci) => {
+          const base = 'bundle_order_' + order.order_number + '_' + (item.variant_id || item.product_id) + '_comp_' + ci;
+          getUnitKeys(base, item.quantity).forEach(k => keys.push(k));
+        });
+      } else if (jarPouch) {
+        ['jar', 'pouch'].forEach(type => {
+          const base = 'jarpouch_order_' + order.order_number + '_' + (item.variant_id || item.product_id) + '_' + type;
+          getUnitKeys(base, item.quantity).forEach(k => keys.push(k));
+        });
+      } else {
+        const base = 'order_' + order.order_number + '_' + String(item.variant_id || (item.product_id + '_' + item.title));
+        getUnitKeys(base, item.quantity).forEach(k => keys.push(k));
+      }
+    });
+    return keys;
+  }
+
+  function checkOrderCompletion() {
+    allOrders.forEach(order => {
+      const keys = getOrderUnitKeys(order);
+      const allDone = keys.length > 0 && keys.every(k => checkedState[k]);
+      if (allDone && !notifiedOrders.has(order.order_number)) {
+        notifiedOrders.add(order.order_number);
+        showToast('✅ Order #' + order.order_number + ' is all packed!');
+      } else if (!allDone) {
+        notifiedOrders.delete(order.order_number);
+      }
+    });
+  }
+
+  // ── DROPDOWN STATUS ───────────────────────────────────────────────────────────
+  function updateDropdownStatus() {
+    const select = document.getElementById('order-filter');
+    [...select.options].forEach(opt => {
+      if (opt.value === 'all') return;
+      const orderNum = parseInt(opt.value);
+      const order = allOrders.find(o => o.order_number === orderNum);
+      if (!order) return;
+      const keys = getOrderUnitKeys(order);
+      const allDone = keys.length > 0 && keys.every(k => checkedState[k]);
+      opt.textContent = (allDone ? '✓ ' : '') + '#' + order.order_number;
+    });
+  }
+
+  function applyFilters() { renderRows(); }
+
+  function esc(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+</script>
 
   // ── JAR + REFILL POUCH DEFINITIONS ──────────────────────────────────────────
   // Key: product title (lowercase, partial match)
@@ -821,13 +1263,6 @@
     });
   }
 
-  function applyFilters() { renderRows(); }
-
-  function esc(str) {
-    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-</script>
 <div class="toast" id="toast"></div>
-
 </body>
 </html>
