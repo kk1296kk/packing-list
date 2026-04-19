@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>True Indian Spices — Packing List</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf7f2;
+    --surface: #ffffff;
+    --border: #e8e0d4;
+    --text: #1a1410;
+    --muted: #8a7d6e;
+    --accent: #c0392b;
+    --accent-light: #fdf0ee;
+    --accent-border: #f0c4be;
+    --green: #27735a;
+    --green-light: #edf7f3;
+    --tag-bg: #f3ede4;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--text);
+    color: #faf7f2;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .header-left h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    letter-spacing: -0.3px;
+  }
+
+  .header-left p {
+    font-size: 11px;
+    color: #a09080;
+    margin-top: 2px;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  /* ── SETUP PANEL ── */
+  #setup-panel {
+    max-width: 520px;
+    margin: 40px auto;
+    padding: 0 16px;
+  }
+
+  .setup-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+  }
+
+  .setup-header {
+    background: var(--accent);
+    color: white;
+    padding: 20px 24px;
+  }
+
+  .setup-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+  }
+
+  .setup-header p {
+    font-size: 13px;
+    opacity: 0.85;
+    margin-top: 4px;
+    line-height: 1.5;
+  }
+
+  .setup-body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .field label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .field input {
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 14px;
+    font-family: 'DM Mono', monospace;
+    color: var(--text);
+    transition: border-color 0.15s;
+    outline: none;
+    width: 100%;
+  }
+
+  .field input:focus {
+    border-color: var(--accent);
+    background: #fff;
+  }
+
+  .field .hint {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: 0.2px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+    width: 100%;
+  }
+
+  .btn-primary:active { background: #a93226; }
+  .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+
+  .btn-ghost {
+    background: transparent;
+    color: #faf7f2;
+    border: 1.5px solid rgba(255,255,255,0.25);
+    font-size: 13px;
+    padding: 8px 14px;
+  }
+
+  .btn-ghost:active { background: rgba(255,255,255,0.1); }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--accent);
+    border: 1.5px solid var(--accent-border);
+    font-size: 13px;
+    padding: 8px 14px;
+  }
+
+  .btn-outline:active { background: var(--accent-light); }
+
+  /* ── MAIN CONTENT ── */
+  #main-content { display: none; padding: 20px 16px; max-width: 800px; margin: 0 auto; }
+
+  /* Stats bar */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 12px;
+    box-shadow: var(--shadow);
+    text-align: center;
+  }
+
+  .stat-card .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    line-height: 1;
+    color: var(--accent);
+  }
+
+  .stat-card .stat-label {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 4px;
+    font-family: 'DM Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+
+  /* Toolbar */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    gap: 10px;
+  }
+
+  .toolbar h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+  }
+
+  /* Search */
+  .search-wrap {
+    position: relative;
+    flex: 1;
+    max-width: 220px;
+  }
+
+  .search-wrap input {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 12px 9px 34px;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    outline: none;
+    width: 100%;
+    transition: border-color 0.15s;
+  }
+
+  .search-wrap input:focus { border-color: var(--accent); }
+
+  .search-wrap .search-icon {
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 14px;
+    pointer-events: none;
+  }
+
+  /* Packing table */
+  .packing-table {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  .table-header {
+    display: grid;
+    grid-template-columns: 1fr 80px;
+    background: var(--tag-bg);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
+  }
+
+  .table-header span {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .table-header span:last-child { text-align: center; }
+
+  .packing-row {
+    display: grid;
+    grid-template-columns: 1fr 80px;
+    align-items: center;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    gap: 0;
+  }
+
+  .packing-row:last-child { border-bottom: none; }
+  .packing-row.hidden { display: none; }
+
+  .item-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.3;
+  }
+
+  .item-variant {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 12px;
+    background: var(--tag-bg);
+    color: var(--muted);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .item-orders {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    margin-top: 6px;
+  }
+
+  .order-tag {
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    background: var(--green-light);
+    color: var(--green);
+    border-radius: 4px;
+    padding: 2px 6px;
+    border: 1px solid #c0e8d8;
+  }
+
+  .item-qty {
+    text-align: center;
+  }
+
+  .qty-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    background: var(--accent-light);
+    color: var(--accent);
+    border: 1.5px solid var(--accent-border);
+    border-radius: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 18px;
+    font-weight: 500;
+  }
+
+  /* Empty / loading / error states */
+  .state-box {
+    text-align: center;
+    padding: 50px 20px;
+    color: var(--muted);
+  }
+
+  .state-box .icon { font-size: 36px; margin-bottom: 10px; }
+  .state-box h3 { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .state-box p { font-size: 13px; line-height: 1.5; }
+
+  .error-banner {
+    background: var(--accent-light);
+    border: 1px solid var(--accent-border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 14px;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: none;
+    line-height: 1.5;
+  }
+
+  /* Loading dots */
+  .loading-dots span {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    margin: 0 3px;
+    animation: bounce 1s infinite;
+  }
+  .loading-dots span:nth-child(2) { animation-delay: 0.15s; }
+  .loading-dots span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes bounce {
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+    40% { transform: translateY(-8px); opacity: 1; }
+  }
+
+  .last-updated {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    margin-top: 14px;
+    text-align: right;
+  }
+
+  /* Print */
+  @media print {
+    header .header-right,
+    .toolbar .btn-outline,
+    .search-wrap { display: none !important; }
+    body { background: white; }
+    .packing-table { box-shadow: none; border: 1px solid #ccc; }
+    .packing-row { break-inside: avoid; }
+    #setup-panel { display: none !important; }
+    #main-content { display: block !important; padding: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>True Indian Spices</h1>
+    <p>Packing List</p>
+  </div>
+  <div class="header-right" id="header-actions" style="display:none;">
+    <button class="btn btn-ghost" onclick="loadOrders()">↻ Refresh</button>
+    <button class="btn btn-ghost" onclick="showSetup()">⚙️</button>
+  </div>
+</header>
+
+<!-- SETUP PANEL -->
+<div id="setup-panel">
+  <div style="height:16px;"></div>
+  <div class="setup-card">
+    <div class="setup-header">
+      <h2>Connect to Shopify</h2>
+      <p>Paste in your Cloudflare Worker URL below. Only needs to be done once.</p>
+    </div>
+    <div class="setup-body">
+      <div class="field">
+        <label>Cloudflare Worker URL</label>
+        <input type="url" id="worker-url" placeholder="https://your-worker.workers.dev" autocomplete="off" spellcheck="false" />
+        <span class="hint">The URL of the Worker script you deployed to Cloudflare.</span>
+      </div>
+      <div id="setup-error" class="error-banner"></div>
+      <button class="btn btn-primary" id="connect-btn" onclick="connect()">Load Packing List</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div id="main-content">
+  <div class="error-banner" id="main-error"></div>
+
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-num" id="stat-orders">—</div>
+      <div class="stat-label">Orders</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="stat-items">—</div>
+      <div class="stat-label">Items</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="stat-skus">—</div>
+      <div class="stat-label">SKUs</div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <h2>Packing List</h2>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="search" id="search-input" placeholder="Filter..." oninput="filterRows()" />
+      </div>
+      <button class="btn btn-outline" onclick="window.print()">🖨️</button>
+    </div>
+  </div>
+
+  <div class="packing-table" id="packing-table">
+    <div class="table-header">
+      <span>Product / Variant</span>
+      <span style="text-align:center;">Qty</span>
+    </div>
+    <div id="table-body">
+      <div class="state-box">
+        <div class="loading-dots"><span></span><span></span><span></span></div>
+        <p style="margin-top:12px;">Loading orders...</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="last-updated" id="last-updated"></div>
+</div>
+
+<script>
+  const WORKER_KEY = 'tis_worker_url';
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem(WORKER_KEY);
+    if (saved) {
+      document.getElementById('worker-url').value = saved;
+      showMain();
+      loadOrders();
+    }
+  });
+
+  function showSetup() {
+    document.getElementById('setup-panel').style.display = 'block';
+    document.getElementById('main-content').style.display = 'none';
+    document.getElementById('header-actions').style.display = 'none';
+  }
+
+  function showMain() {
+    document.getElementById('setup-panel').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+    document.getElementById('header-actions').style.display = 'flex';
+  }
+
+  async function connect() {
+    const url = document.getElementById('worker-url').value.trim().replace(/\/$/, '');
+    if (!url) {
+      showSetupError('Please enter your Cloudflare Worker URL.');
+      return;
+    }
+
+    localStorage.setItem(WORKER_KEY, url);
+    document.getElementById('connect-btn').disabled = true;
+    document.getElementById('connect-btn').textContent = 'Connecting...';
+    document.getElementById('setup-error').style.display = 'none';
+
+    try {
+      showMain();
+      await loadOrders();
+    } catch(e) {
+      showSetup();
+      showSetupError(e.message);
+    } finally {
+      document.getElementById('connect-btn').disabled = false;
+      document.getElementById('connect-btn').textContent = 'Load Packing List';
+    }
+  }
+
+  function showSetupError(msg) {
+    const el = document.getElementById('setup-error');
+    el.textContent = '⚠️ ' + msg;
+    el.style.display = 'block';
+  }
+
+  async function loadOrders() {
+    const workerUrl = localStorage.getItem(WORKER_KEY);
+    if (!workerUrl) { showSetup(); return; }
+
+    document.getElementById('table-body').innerHTML = `
+      <div class="state-box">
+        <div class="loading-dots"><span></span><span></span><span></span></div>
+        <p style="margin-top:12px;">Fetching orders...</p>
+      </div>`;
+    document.getElementById('main-error').style.display = 'none';
+
+    try {
+      const resp = await fetch(workerUrl);
+      if (!resp.ok) throw new Error(`Worker returned ${resp.status}`);
+      const data = await resp.json();
+      if (data.error) throw new Error(data.error);
+      buildPackingList(data.orders || []);
+    } catch(e) {
+      const el = document.getElementById('main-error');
+      el.textContent = '⚠️ Could not load orders: ' + e.message;
+      el.style.display = 'block';
+      document.getElementById('table-body').innerHTML = '';
+    }
+  }
+
+  function buildPackingList(orders) {
+    const grouped = {};
+
+    for (const order of orders) {
+      for (const item of order.line_items) {
+        const key = item.variant_id || (item.product_id + '_' + item.title);
+        if (!grouped[key]) {
+          grouped[key] = {
+            name: item.title,
+            variant: item.variant_title && item.variant_title !== 'Default Title' ? item.variant_title : null,
+            sku: item.sku || '',
+            qty: 0,
+            orders: []
+          };
+        }
+        grouped[key].qty += item.quantity;
+        const tag = '#' + order.order_number;
+        if (!grouped[key].orders.includes(tag)) grouped[key].orders.push(tag);
+      }
+    }
+
+    const rows = Object.values(grouped).sort((a, b) => b.qty - a.qty);
+    const totalItems = rows.reduce((s, r) => s + r.qty, 0);
+
+    document.getElementById('stat-orders').textContent = orders.length;
+    document.getElementById('stat-items').textContent = totalItems;
+    document.getElementById('stat-skus').textContent = rows.length;
+
+    const tbody = document.getElementById('table-body');
+
+    if (rows.length === 0) {
+      tbody.innerHTML = `
+        <div class="state-box">
+          <div class="icon">🎉</div>
+          <h3>All clear!</h3>
+          <p>No unfulfilled orders right now.</p>
+        </div>`;
+    } else {
+      tbody.innerHTML = rows.map(r => `
+        <div class="packing-row" data-name="${esc((r.name + ' ' + (r.variant||'')).toLowerCase())}">
+          <div>
+            <div class="item-name">${esc(r.name)}</div>
+            ${r.variant ? `<span class="item-variant">${esc(r.variant)}</span>` : ''}
+            <div class="item-orders">
+              ${r.orders.map(o => `<span class="order-tag">${esc(o)}</span>`).join('')}
+            </div>
+          </div>
+          <div class="item-qty">
+            <span class="qty-badge">${r.qty}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('last-updated').textContent =
+      'Updated ' + new Date().toLocaleTimeString('en-AU', { timeZone: 'Australia/Brisbane' });
+  }
+
+  function filterRows() {
+    const q = document.getElementById('search-input').value.toLowerCase();
+    document.querySelectorAll('.packing-row').forEach(row => {
+      row.classList.toggle('hidden', !!q && !row.dataset.name.includes(q));
+    });
+  }
+
+  function esc(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+</script>
+</body>
+</html>
