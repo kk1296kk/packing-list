@@ -413,7 +413,11 @@
       }
     }
 
-    allRows = Object.values(grouped).sort((a, b) => b.qty - a.qty);
+    allRows = Object.values(grouped).sort((a, b) => {
+      const nameCompare = a.name.localeCompare(b.name);
+      if (nameCompare !== 0) return nameCompare;
+      return (a.variant || '').localeCompare(b.variant || '');
+    });
     const totalItems = allRows.reduce((s, r) => s + r.qty, 0);
 
     document.getElementById('stat-orders').textContent = orders.length;
