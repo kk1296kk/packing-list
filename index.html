@@ -254,6 +254,33 @@
 <script>
   const WORKER_URL = 'https://packing-list.ketan-k1296.workers.dev';
 
+  // ── JAR + REFILL POUCH DEFINITIONS ──────────────────────────────────────────
+  // Key: product title (lowercase, partial match)
+  // jar and pouch sizes to split into when variant contains "jar + refill pouch"
+  const JAR_POUCH_PRODUCTS = {
+    'dhana jeera':       { jar: '45g Jar',  pouch: '85g Pouch' },
+    'garam masala':      { jar: '150g Jar', pouch: '100g Pouch' },
+    'cinnamon':          { jar: '45g Jar',  pouch: '100g Pouch' },
+    'garlic powder':     { jar: '70g Jar',  pouch: '100g Pouch' },
+    'red chilli':        { jar: '55g Jar',  pouch: '100g Pouch' },
+    'kashmiri chilli':   { jar: '50g Jar',  pouch: '100g Pouch' },
+    'turmeric':          { jar: '65g Jar',  pouch: '100g Pouch' },
+    'cardamom':          { jar: '50g Jar',  pouch: '55g Pouch' },
+    'cloves':            { jar: '40g Jar',  pouch: '70g Pouch' },
+    'jeera':             { jar: '55g Jar',  pouch: '90g Pouch' },
+    'black pepper':      { jar: '60g Jar',  pouch: '100g Pouch' },
+  };
+
+  // Returns jar+pouch sizes if this item is a jar+refill pouch variant, else null
+  function getJarPouchSizes(title, variantTitle) {
+    if (!variantTitle || !variantTitle.toLowerCase().includes('jar + refill pouch')) return null;
+    const tl = title.toLowerCase();
+    for (const [key, sizes] of Object.entries(JAR_POUCH_PRODUCTS)) {
+      if (tl.includes(key)) return sizes;
+    }
+    return null;
+  }
+
   // ── BUNDLE DEFINITIONS ──────────────────────────────────────────────────────
   // Key: product title (lowercase, partial match ok via includes())
   // Each component: { name, size } — size shown as variant tag
@@ -400,11 +427,17 @@
       const orderTag = '#' + order.order_number;
       for (const item of order.line_items) {
         const components = getBundleComponents(item.title, item.variant_title);
+        const jarPouch = getJarPouchSizes(item.title, item.variant_title);
+
         if (components) {
           // Explode bundle — each component × bundle quantity
           for (const comp of components) {
             addToGroup(comp.name, comp.size, item.quantity, order.order_number, orderTag);
           }
+        } else if (jarPouch) {
+          // Split into jar + pouch
+          addToGroup(item.title, jarPouch.jar, item.quantity, order.order_number, orderTag);
+          addToGroup(item.title, jarPouch.pouch, item.quantity, order.order_number, orderTag);
         } else {
           // Normal product
           const size = item.variant_title && item.variant_title !== 'Default Title' ? item.variant_title : null;
@@ -463,6 +496,7 @@
       let html = '';
       for (const item of order.line_items) {
         const components = getBundleComponents(item.title, item.variant_title);
+        const jarPouch = getJarPouchSizes(item.title, item.variant_title);
         const variantLabel = item.variant_title && item.variant_title !== 'Default Title' ? item.variant_title : null;
 
         if (components) {
@@ -489,6 +523,32 @@
                 </div>
                 <div class="item-qty">
                   <span class="qty-badge small">${qty}</span>
+                </div>
+              </div>`;
+          });
+        } else if (jarPouch) {
+          // Jar + refill pouch: show header + jar row + pouch row
+          html += `
+            <div class="bundle-header">
+              <span class="bundle-header-label">${esc(item.title)}${variantLabel ? ' — ' + esc(variantLabel) : ''}</span>
+              <span class="bundle-badge">Jar + Pouch × ${item.quantity}</span>
+            </div>`;
+
+          ['jar', 'pouch'].forEach((type, ci) => {
+            const size = jarPouch[type];
+            const key = 'jarpouch_order_' + order.order_number + '_' + (item.variant_id || item.product_id) + '_' + type;
+            const isChecked = !!checkedState[key];
+            html += `
+              <div class="bundle-row${isChecked ? ' checked' : ''}" id="row-${key}">
+                <div class="item-check">
+                  <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleCheck('${key}', this)" />
+                </div>
+                <div>
+                  <div class="item-name bundle-item-name">${esc(item.title)}</div>
+                  <span class="item-variant">${esc(size)}</span>
+                </div>
+                <div class="item-qty">
+                  <span class="qty-badge small">${item.quantity}</span>
                 </div>
               </div>`;
           });
@@ -569,10 +629,14 @@
       const keys = [];
       order.line_items.forEach(item => {
         const components = getBundleComponents(item.title, item.variant_title);
+        const jarPouch = getJarPouchSizes(item.title, item.variant_title);
         if (components) {
           components.forEach((_, ci) => {
             keys.push('bundle_order_' + order.order_number + '_' + (item.variant_id || item.product_id) + '_comp_' + ci);
           });
+        } else if (jarPouch) {
+          keys.push('jarpouch_order_' + order.order_number + '_' + (item.variant_id || item.product_id) + '_jar');
+          keys.push('jarpouch_order_' + order.order_number + '_' + (item.variant_id || item.product_id) + '_pouch');
         } else {
           keys.push(String(item.variant_id || (item.product_id + '_' + item.title)));
         }
