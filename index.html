@@ -178,6 +178,88 @@
   }
   .qty-badge.small { width: 34px; height: 34px; font-size: 14px; }
 
+  /* ── SPICE GROUP DIVIDER ── */
+  .spice-divider {
+    padding: 6px 14px 4px;
+    border-bottom: 1px solid var(--border);
+    background: var(--tag-bg);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    color: var(--muted);
+  }
+
+  /* ── PROGRESS BAR ── */
+  .progress-wrap {
+    margin-bottom: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    box-shadow: var(--shadow);
+    display: none;
+  }
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .progress-label span { font-size: 12px; font-weight: 500; color: var(--muted); }
+  .progress-label strong { font-size: 12px; font-weight: 600; color: var(--green); }
+  .progress-track {
+    height: 6px;
+    background: var(--tag-bg);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--green);
+    border-radius: 99px;
+    transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    width: 0%;
+  }
+
+  /* ── ROW CHECK ANIMATION ── */
+  .packing-row, .bundle-row {
+    transition: background 0.25s ease, opacity 0.25s ease;
+  }
+  .packing-row.checking, .bundle-row.checking {
+    animation: flashGreen 0.35s ease forwards;
+  }
+  @keyframes flashGreen {
+    0%   { background: var(--green-light); }
+    100% { background: #fafafa; }
+  }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--text);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+    z-index: 999;
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.35s ease;
+    opacity: 0;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+
   .state-box { text-align: center; padding: 48px 20px; color: var(--muted); }
   .state-box h3 { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
   .state-box p { font-size: 13px; line-height: 1.5; }
@@ -231,6 +313,16 @@
     </div>
     <div class="search-wrap">
       <input type="search" id="search-input" placeholder="Search items..." oninput="applyFilters()" />
+    </div>
+  </div>
+
+  <div class="progress-wrap" id="progress-wrap">
+    <div class="progress-label">
+      <span id="progress-text">0 of 0 items packed</span>
+      <strong id="progress-pct">0%</strong>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill"></div>
     </div>
   </div>
 
@@ -470,6 +562,7 @@
 
     renderRows();
     updateDropdownStatus();
+    updateProgress();
 
     document.getElementById('last-updated').textContent =
       'Updated ' + new Date().toLocaleTimeString('en-AU', { timeZone: 'Australia/Brisbane' });
@@ -586,9 +679,18 @@
       return;
     }
 
-    tbody.innerHTML = visibleRows.map(r => {
+    let html = '';
+    let lastSpiceName = null;
+    visibleRows.forEach(r => {
       const isChecked = !!checkedState[r.key];
-      return `
+      // Insert divider when spice name changes
+      if (r.name !== lastSpiceName) {
+        if (lastSpiceName !== null) {
+          html += `<div class="spice-divider">${esc(r.name)}</div>`;
+        }
+        lastSpiceName = r.name;
+      }
+      html += `
         <div class="packing-row${isChecked ? ' checked' : ''}" id="row-${r.key}">
           <div class="item-check">
             <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleCheck('${r.key}', this)" />
@@ -596,7 +698,6 @@
           <div>
             <div class="item-name">${esc(r.name)}</div>
             ${r.variant ? `<span class="item-variant">${esc(r.variant)}</span>` : ''}
-
             <div class="item-orders">
               ${r.orders.map(o => `<span class="order-tag">${esc(o)}</span>`).join('')}
             </div>
@@ -605,15 +706,88 @@
             <span class="qty-badge">${r.qty}</span>
           </div>
         </div>`;
-    }).join('');
+    });
+    tbody.innerHTML = html;
+    updateProgress();
   }
 
   // ── CHECKBOX ─────────────────────────────────────────────────────────────────
   function toggleCheck(key, checkbox) {
+    const wasAllDone = getTotalProgress().checked === getTotalProgress().total && getTotalProgress().total > 0;
     checkedState[key] = checkbox.checked;
     const row = document.getElementById('row-' + key);
-    if (row) row.classList.toggle('checked', checkbox.checked);
+    if (row) {
+      if (checkbox.checked) {
+        row.classList.add('checking');
+        setTimeout(() => row.classList.remove('checking'), 400);
+      }
+      row.classList.toggle('checked', checkbox.checked);
+    }
     updateDropdownStatus();
+    updateProgress();
+    checkOrderCompletion();
+  }
+
+  // ── PROGRESS BAR ─────────────────────────────────────────────────────────────
+  function getTotalProgress() {
+    const total = allRows.length;
+    const checked = allRows.filter(r => checkedState[r.key]).length;
+    return { total, checked };
+  }
+
+  function updateProgress() {
+    const wrap = document.getElementById('progress-wrap');
+    const { total, checked } = getTotalProgress();
+    if (total === 0) { wrap.style.display = 'none'; return; }
+    wrap.style.display = 'block';
+    const pct = Math.round((checked / total) * 100);
+    document.getElementById('progress-text').textContent = `${checked} of ${total} items packed`;
+    document.getElementById('progress-pct').textContent = pct + '%';
+    document.getElementById('progress-fill').style.width = pct + '%';
+  }
+
+  // ── TOAST ─────────────────────────────────────────────────────────────────────
+  let toastTimer = null;
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.innerHTML = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  // ── ORDER COMPLETION CHECK ────────────────────────────────────────────────────
+  const notifiedOrders = new Set();
+  function checkOrderCompletion() {
+    const select = document.getElementById('order-filter');
+    [...select.options].forEach(opt => {
+      if (opt.value === 'all') return;
+      const orderNum = parseInt(opt.value);
+      const order = allOrders.find(o => o.order_number === orderNum);
+      if (!order) return;
+
+      const keys = [];
+      order.line_items.forEach(item => {
+        const components = getBundleComponents(item.title, item.variant_title);
+        const jarPouch = getJarPouchSizes(item.title, item.variant_title);
+        if (components) {
+          components.forEach((_, ci) => keys.push('bundle_order_' + order.order_number + '_' + (item.variant_id || item.product_id) + '_comp_' + ci));
+        } else if (jarPouch) {
+          keys.push('jarpouch_order_' + order.order_number + '_' + (item.variant_id || item.product_id) + '_jar');
+          keys.push('jarpouch_order_' + order.order_number + '_' + (item.variant_id || item.product_id) + '_pouch');
+        } else {
+          keys.push(String(item.variant_id || (item.product_id + '_' + item.title)));
+        }
+      });
+
+      const allDone = keys.length > 0 && keys.every(k => checkedState[k]);
+      if (allDone && !notifiedOrders.has(orderNum)) {
+        notifiedOrders.add(orderNum);
+        showToast('✅ Order #' + orderNum + ' is all packed!');
+      } else if (!allDone) {
+        notifiedOrders.delete(orderNum);
+      }
+    });
   }
 
   // ── DROPDOWN COMPLETION ───────────────────────────────────────────────────────
@@ -653,5 +827,7 @@
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 </script>
+<div class="toast" id="toast"></div>
+
 </body>
 </html>
