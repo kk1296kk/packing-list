@@ -167,7 +167,7 @@
 
   .item-orders { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 5px; }
   .order-tag { font-size: 11px; font-weight: 500; background: var(--green-light); color: var(--green); border-radius: 4px; padding: 1px 6px; border: 1px solid var(--green-border); }
-  .bundle-tag { font-size: 10px; font-weight: 600; background: var(--orange-light); color: var(--orange); border-radius: 4px; padding: 1px 6px; border: 1px solid var(--orange-border); margin-top: 3px; display: inline-block; }
+
 
   .item-qty { text-align: center; }
   .qty-badge {
@@ -379,60 +379,36 @@
   }
 
   // ── BUILD PACKING LIST ───────────────────────────────────────────────────────
-  // Explodes bundles into individual components for the grouped "all orders" view
+  // Explodes bundles and merges all components + regular items by name+size
   function buildPackingList(orders) {
     const grouped = {};
 
-    for (const order of orders) {
-      for (const item of order.line_items) {
-        const rawKey = String(item.variant_id || (item.product_id + '_' + item.title));
-        const components = getBundleComponents(item.title, item.variant_title);
+    function addToGroup(name, size, qty, orderNum, orderTag) {
+      // Key is name + size so Jeera 55g Jar from a kit and from a regular order merge
+      const key = (name + '||' + (size || '')).toLowerCase();
+      if (!grouped[key]) {
+        grouped[key] = { key, name, variant: size || null, qty: 0, orders: [], orderNums: [] };
+      }
+      grouped[key].qty += qty;
+      if (!grouped[key].orders.includes(orderTag)) {
+        grouped[key].orders.push(orderTag);
+        grouped[key].orderNums.push(orderNum);
+      }
+    }
 
+    for (const order of orders) {
+      const orderTag = '#' + order.order_number;
+      for (const item of order.line_items) {
+        const components = getBundleComponents(item.title, item.variant_title);
         if (components) {
-          // Explode bundle — add each component multiplied by bundle quantity
-          for (let ci = 0; ci < components.length; ci++) {
-            const comp = components[ci];
-            const key = 'bundle_' + rawKey + '_comp_' + ci;
-            if (!grouped[key]) {
-              grouped[key] = {
-                key,
-                name: comp.name,
-                variant: comp.size || null,
-                qty: 0,
-                orders: [],
-                orderNums: [],
-                isBundle: false, // it's a component, shows as normal row
-                bundleSource: item.title, // for the "from bundle" tag
-              };
-            }
-            grouped[key].qty += item.quantity; // each bundle = 1 of this component
-            const tag = '#' + order.order_number;
-            if (!grouped[key].orders.includes(tag)) {
-              grouped[key].orders.push(tag);
-              grouped[key].orderNums.push(order.order_number);
-            }
+          // Explode bundle — each component × bundle quantity
+          for (const comp of components) {
+            addToGroup(comp.name, comp.size, item.quantity, order.order_number, orderTag);
           }
         } else {
           // Normal product
-          const key = rawKey;
-          if (!grouped[key]) {
-            grouped[key] = {
-              key,
-              name: item.title,
-              variant: item.variant_title && item.variant_title !== 'Default Title' ? item.variant_title : null,
-              qty: 0,
-              orders: [],
-              orderNums: [],
-              isBundle: false,
-              bundleSource: null,
-            };
-          }
-          grouped[key].qty += item.quantity;
-          const tag = '#' + order.order_number;
-          if (!grouped[key].orders.includes(tag)) {
-            grouped[key].orders.push(tag);
-            grouped[key].orderNums.push(order.order_number);
-          }
+          const size = item.variant_title && item.variant_title !== 'Default Title' ? item.variant_title : null;
+          addToGroup(item.title, size, item.quantity, order.order_number, orderTag);
         }
       }
     }
@@ -556,7 +532,7 @@
           <div>
             <div class="item-name">${esc(r.name)}</div>
             ${r.variant ? `<span class="item-variant">${esc(r.variant)}</span>` : ''}
-            ${r.bundleSource ? `<span class="bundle-tag">from ${esc(r.bundleSource)}</span>` : ''}
+
             <div class="item-orders">
               ${r.orders.map(o => `<span class="order-tag">${esc(o)}</span>`).join('')}
             </div>
